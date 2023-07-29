@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cw4-vacancies-parsing-v2"
+version = "2.0.0"
+description = "Vacancies parsing"
+authors = ["Yerzhan Amirkhanov <yerzhanamirkhanov@gmail.com>"]
+readme = "README.md"
+packages = [{include = "cw4_vacancies_parsing_v2"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
