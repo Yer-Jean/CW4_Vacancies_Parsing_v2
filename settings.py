@@ -1,7 +1,7 @@
 HH_API_URL = 'https://api.hh.ru/vacancies'
 SJ_API_URL = 'https://api.superjob.ru/2.0/vacancies/'
 SJ_API_KEY = 'v3.r.137695416.0a834cab09168649ce71b4bb9afc6a5879e3e64d.7c882995003416062bf7505f66a50213e7bc5183'
-SEARCH_RESULTS_FILE = 'search_results.json'
+SEARCH_RESULTS_FILE = 'vacancies.json'
 RESULTS_PER_PAGE = 2
 
 MENU = {

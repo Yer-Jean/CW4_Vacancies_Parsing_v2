@@ -1,9 +1,8 @@
 from api_models.hh_api import HeadHunterAPI
 from api_models.sj_api import SuperJobAPI
-from models import search_vacancies
-# from models.search_vacancies import SearchVacancies
 from models.vacancy import Vacancy
-from settings import MENU
+from models.json_saver import JSONSaver
+from settings import MENU, SEARCH_RESULTS_FILE
 
 
 class Menu:
@@ -11,10 +10,7 @@ class Menu:
     __menu = MENU
 
     def __call__(self, *args, **kwargs):
-        # start_search = True
-        vacancies = []
-        # start_filter = True
-
+        json_saver = JSONSaver()
         # Выводим первое меню
         while True:
             # ----------- Выводим начальное меню -----------
@@ -23,8 +19,16 @@ class Menu:
                 case '1':  # Ввести запрос
                     # query: str = 'django'
                     query: str = input("\nВведите поисковый запрос: ").strip()
-                case '3':  # Новый запрос
-                    Vacancy.clear_all_vacancies()
+                case '2':  # Обработать сохраненные вакансии
+                    # Считываем из файла все вакансии
+                    vacancies = json_saver.read_json_file()
+                    print(len(vacancies))
+                    for vacancy in vacancies:
+                        Vacancy(**vacancy)
+                case '3':  # Удалить сохраненные вакансии
+                    json_saver.clear_json_file()
+                    vacancies = []
+                    continue
                 case '0':  # Выход из программы
                     return
 
@@ -45,9 +49,6 @@ class Menu:
                     vacancies = vacancies + sj_api.get_vacancies(query)
                 case '4':  # Новый запрос
                     vacancies = []
-                    # Vacancy.clear_all_vacancies()  # Перед новым запросом удаляем предыдущие результаты
-                #     SearchFilter.total_vacancies = 0  # и обнуляем счетчик
-                #     start_search = True
                     continue
                 case '0':  # Выход из программы
                     return
@@ -58,14 +59,13 @@ class Menu:
                 print(f'По запросу {query} ничего не найдено.\nИзмените параметры запроса')
                 continue
 
-            for vacancy in vacancies:
-                Vacancy(**vacancy)
+            # Сохраняем полученные вакансии в файл
+            json_saver.write_to_json_file(vacancies)
 
-            print('Результаты сохранены в файл\nВывести на экран?')
+            print(f'\nРезультаты сохранены В файл {SEARCH_RESULTS_FILE}\n')  # Вывести на экран?')
             # if self.menu_interaction(self.__menu['Yes_No']) == 'y':
             #     for vacancy in vacancies:  #Vacancy.get_all_vacancies():
             #         print(vacancy)
-
 
     @staticmethod
     def menu_interaction(menu: dict) -> str:

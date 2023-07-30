@@ -43,7 +43,7 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
 
             try:
                 for i in range(len(vacancies_data)):  # Цикл по вакансиям на странице
-                    vacancies += [{
+                    vacancy = {
                         'vacancy_id': vacancies_data[i]['id'],
                         'name': vacancies_data[i]['name'],
                         'employer': vacancies_data[i]['employer']['name'],
@@ -57,7 +57,8 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
                         'requirement': validate_key(vacancies_data[i], 'str', 'snippet', 'requirement'),
                         'url': vacancies_data[i]['alternate_url'],
                         'source': 'hh.ru',
-                    }]
+                    }
+                    vacancies.append(vacancy)
             except KeyError:
                 raise APIDataException('произошла ошибка при обработке данных вакансий')
 
