@@ -1,6 +1,5 @@
 from api_models.site_api import SiteAPI
 from api_models.get_remote_data_mixin import GetRemoteData
-# from api_models.validate_mixin import ValidateMixin
 from models.exceptions import GetRemoteDataException, APIDataException
 from settings import SJ_API_KEY, SJ_API_URL, RESULTS_PER_PAGE
 from utils.validate_data_key import validate_key
@@ -11,6 +10,8 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
     __sj_api_key = SJ_API_KEY
 
     def get_vacancies(self, search_string) -> list[dict] | None:
+        """Метод возвращает список вакансий по заданному запросу search_string,
+        используя SuperJob API. Возвращает список словарей с данными о вакансиях"""
         vacancies = []
         current_page = 0
         __headers = {'X-Api-App-Id': SJ_API_KEY}
@@ -20,7 +21,7 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
         start = True
 
         while True:
-            try:
+            try:  # Получаем данные о вакансиях используя SuperJob API
                 data = self.get_remote_data(url=self.__sj_api_url,
                                             headers=__headers,
                                             params=request_params)
@@ -30,13 +31,15 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
                 return None
 
             if start:
-                num_of_vacancies = data['total']  # Если не найдена ни одна вакансия, то возвращаем None
+                num_of_vacancies = data['total']  # Получаем общее количество найденных вакансий
                 if num_of_vacancies == 0:  # Если не найдена ни одна вакансия, то возвращаем None
                     return None
                 start = False
 
+            # Из полученного ответа забираем только список вакансий
             vacancies_data = data['objects']
-            try:
+
+            try:  # Создаем новый список с данными о вакансиях, нормализуя названия ключей
                 for i in range(len(vacancies_data)):  # Цикл по вакансиям на странице
                     vacancies += [{
                         'vacancy_id': vacancies_data[i]['id'],
@@ -58,5 +61,5 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
 
             current_page += 1  # Переходим к следующей странице результатов
             request_params.update({'page': current_page})
-            if not data['more']:  # Страницы результатов заканчиваются, когда параметр more = False
-                return vacancies
+            if not data['more']:   # Страницы результатов заканчиваются, когда параметр more = False
+                return vacancies   # Возвращаем список с данными о вакансиях

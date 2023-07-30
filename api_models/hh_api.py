@@ -1,5 +1,4 @@
 from api_models.site_api import SiteAPI
-# from api_models.validate_mixin import ValidateMixin
 from api_models.get_remote_data_mixin import GetRemoteData
 from models.exceptions import GetRemoteDataException, APIDataException
 from settings import RESULTS_PER_PAGE, HH_API_URL
@@ -11,6 +10,8 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
     __hh_api_url = HH_API_URL
 
     def get_vacancies(self, search_string) -> list[dict] | None:
+        """Метод возвращает список вакансий по заданному запросу search_string,
+        используя HeadHunter API. Возвращает список словарей с данными о вакансиях"""
         vacancies = []
         current_page = 0
         request_params = {'search_field': 'name',
@@ -21,7 +22,7 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
         start = True
 
         while True:
-            try:
+            try:  # Получаем данные о вакансиях используя HeadHunter API
                 data = self.get_remote_data(url=self.__hh_api_url, params=request_params)
             except GetRemoteDataException as err:  # Если произошли ошибки, то возвращаем None
                 print(err.message)
@@ -29,15 +30,16 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
                 return None
 
             if start:
-                num_of_pages = data['pages']
-                num_of_vacancies = data['found']
+                num_of_pages = data['pages']  # Получаем количество страниц найденных вакансий
+                num_of_vacancies = data['found']  # Получаем общее количество найденных вакансий
                 if num_of_vacancies == 0:  # Если не найдена ни одна вакансия, то возвращаем None
                     return None
                 start = False
 
+            # Из полученного ответа забираем только список вакансий
             vacancies_data = data['items']
 
-            try:
+            try:  # Создаем новый список с данными о вакансиях, нормализуя названия ключей
                 for i in range(len(vacancies_data)):  # Цикл по вакансиям на странице
                     vacancy = {
                         'vacancy_id': vacancies_data[i]['id'],
@@ -60,5 +62,5 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
 
             current_page += 1  # Переходим к следующей странице результатов
             request_params.update({'page': current_page})
-            if current_page == num_of_pages + 1:
-                return vacancies
+            if current_page == num_of_pages + 1:  # Когда достигли последней страницы с вакансиями:
+                return vacancies                  # возвращаем их список

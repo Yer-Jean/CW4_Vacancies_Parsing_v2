@@ -12,9 +12,8 @@ class Menu:
     json_saver = JSONSaver()
 
     def __call__(self, *args, **kwargs):
-        # Выводим первое меню
         while True:
-            # ----------- Выводим начальное меню -----------
+            # Выводим начальное меню
             choice: str = self.menu_interaction(self.__menu['main'])
             match choice:
                 case '1':  # Ввести запрос
@@ -34,7 +33,7 @@ class Menu:
                 case '0':  # Выход из программы
                     return
 
-            # ----------- Выводим меню 1 уровня -----------
+            # Выводим меню выбора источника данных
             print('\nВыберите источник')
             choice: str = self.menu_interaction(self.__menu['get_API_data'])
             match choice:
@@ -54,7 +53,7 @@ class Menu:
                     continue
                 case '0':  # Выход из программы
                     return
-
+            # Выводим статистику найденных по запросу вакансий
             if vacancies:
                 print(f'По запросу {query} найдено вакансий: {len(vacancies)}')
             else:
@@ -67,7 +66,7 @@ class Menu:
             except (FileDataException, GetRemoteDataException) as err:
                 print(err.message)
 
-            print(f'\nРезультаты сохранены В файл {SEARCH_RESULTS_FILE}\n')  # Вывести на экран?')
+            print(f'\nРезультаты сохранены В файл {SEARCH_RESULTS_FILE}\n')
 
     def menu_sort_filter(self):
         while True:
@@ -85,22 +84,25 @@ class Menu:
                 Vacancy(**vacancy)
 
             print(f'\nРанее сохранены в файл {len(vacancies)} вакансий')
-
+            # Выводим меню для обработки вакансий: фильтр и сортировка
             choice: str = self.menu_interaction(self.__menu['sort_filter'])
             match choice:
-                case '1':  # Вывести на экран
+                case '1':  # Вывести на экран все вакансии
                     for vacancy in Vacancy.get_all_vacancies():
                         print(vacancy)
-                case '2':  # Добавить фильтр
-                    while True:
+                case '2':  # Добавить фильтр и сортировать
+                    while True:  # Получаем число ТОП вакансий для вывода на экран
                         num = input('\nВведите количество ТОП по оплате вакансий: ')
                         if num.isdigit():
                             num_top_vacancies = int(num)
                             break
                         else:
                             print('Некорректный ввод. Введите целое число')
+                    # Фильтруем список вакансий
                     filtered_vacancies = Vacancy.filter_processing()
+                    # Сортируем список вакансий по оплате
                     sorted_vacancies = Vacancy.sort_processing(filtered_vacancies, num_top_vacancies)
+                    # Выводим ТОП вакансии по оплате
                     print(f'Выводим ТОП-{num_top_vacancies} вакансий:')
                     for vacancy in sorted_vacancies:
                         print(vacancy)

@@ -10,11 +10,13 @@ class JSONSaver:
     __search_result_file = SEARCH_RESULTS_FILE
 
     def read_json_file(self) -> list:
+        """Метод для чтения файла с JSON-данными
+        Возвращает список данных"""
         try:
             with open(self.__search_result_file) as json_file:
                 # Проверяем файл на содержимое. Размер = 0 значит пустой
                 if os.stat(self.__search_result_file).st_size == 0:
-                    data_list = []  # Возвращаем пустой список
+                    data_list = []            # Возвращаем пустой список
                 else:  # Иначе считываем из файла данные и возвращаем их
                     data_list: list = json.load(json_file)
         except json.decoder.JSONDecodeError:
@@ -24,6 +26,8 @@ class JSONSaver:
         return data_list
 
     def write_to_json_file(self, data):
+        """Метод записывает в файл с JSON-данные,
+        сохраняя имеющиеся в нем данные"""
         try:
             with open(self.__search_result_file, "a") as json_file:
                 # Проверяем файл на содержимое. Размер = 0 значит пустой
@@ -35,6 +39,7 @@ class JSONSaver:
                     # Добавляем к ним новые
                     data_list += data
                     # Удаляем из данных дубликаты
+                    # Дубликаты ищем по значению url - уникальному для каждой вакансии
                     data_list = self.remove_duplicates(data_list, 'url')
                     # И записываем всё вместе в файл
                     with open(self.__search_result_file, "w") as json_file:
@@ -46,7 +51,7 @@ class JSONSaver:
 
     def clear_json_file(self):
         """Очищаем файл с данными"""
-        with open(self.__search_result_file, "w") as f:
+        with open(self.__search_result_file, "w"):
             pass
 
     @staticmethod
