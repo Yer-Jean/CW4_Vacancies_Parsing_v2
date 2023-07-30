@@ -7,7 +7,12 @@ from utils.validate_data_key import validate_key
 
 
 class HeadHunterAPI(SiteAPI, GetRemoteData):
+
     __hh_api_url = HH_API_URL
+
+    # def __init__(self, search_string: str):
+    #     self.search_string = search_string
+        # self.get_vacancies(self.search_string)
 
     def get_vacancies(self, search_string) -> list[dict] | None:
         vacancies = []
@@ -16,6 +21,7 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
                           'text': search_string,
                           'per_page': RESULTS_PER_PAGE,
                           'page': current_page}
+        num_of_pages = 0
         start = True
 
         while True:
@@ -34,7 +40,7 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
                 start = False
 
             vacancies_data = data['items']
-            # print(json.dumps(vacancies_data, indent=4, ensure_ascii=False))
+
             try:
                 for i in range(len(vacancies_data)):  # Цикл по вакансиям на странице
                     vacancies += [{
@@ -55,7 +61,7 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
             except KeyError:
                 raise APIDataException('произошла ошибка при обработке данных вакансий')
 
-            current_page += 1
+            current_page += 1  # Переходим к следующей странице результатов
             request_params.update({'page': current_page})
-            if current_page == 3:  # num_of_pages + 1:
+            if current_page == num_of_pages + 1:
                 return vacancies

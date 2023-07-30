@@ -15,7 +15,6 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
         current_page = 0
         __headers = {'X-Api-App-Id': SJ_API_KEY}
         request_params = {'keys': search_string,
-                          'srws': 1,
                           'count': RESULTS_PER_PAGE,
                           'page': current_page}
         start = True
@@ -29,18 +28,14 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
                 print(err.message)
                 print('попробуйте немного позже или измените параметры запроса')
                 return None
-            if data['total'] == 0:  # Если не найдена ни одна вакансия, то возвращаем None
-                # print('\nПо вашему запросу на HeadHunter ничего не найдено. Измените параметры запроса')
-                return None
 
             if start:
-                num_of_vacancies = data['total']
+                num_of_vacancies = data['total']  # Если не найдена ни одна вакансия, то возвращаем None
                 if num_of_vacancies == 0:  # Если не найдена ни одна вакансия, то возвращаем None
                     return None
                 start = False
 
             vacancies_data = data['objects']
-            # print(json.dumps(vacancies_data, indent=4, ensure_ascii=False))
             try:
                 for i in range(len(vacancies_data)):  # Цикл по вакансиям на странице
                     vacancies += [{
@@ -61,8 +56,7 @@ class SuperJobAPI(SiteAPI, GetRemoteData):
             except KeyError:
                 raise APIDataException('произошла ошибка при обработке данных вакансий')
 
-            current_page += 1
+            current_page += 1  # Переходим к следующей странице результатов
             request_params.update({'page': current_page})
             if not data['more']:  # Страницы результатов заканчиваются, когда параметр more = False
-                # print(num_of_vacancies)
                 return vacancies
