@@ -1,5 +1,8 @@
+import json
+
 from api_models.hh_api import HeadHunterAPI
 from api_models.sj_api import SuperJobAPI
+from models.exceptions import FileDataException, GetRemoteDataException
 from models.vacancy import Vacancy
 from models.json_saver import JSONSaver
 from settings import MENU, SEARCH_RESULTS_FILE
@@ -21,12 +24,21 @@ class Menu:
                     query: str = input("\nВведите поисковый запрос: ").strip()
                 case '2':  # Обработать сохраненные вакансии
                     # Считываем из файла все вакансии
-                    vacancies = json_saver.read_json_file()
-                    print(len(vacancies))
+                    try:
+                        vacancies = json_saver.read_json_file()
+                        if len(vacancies) == 0:
+                            print('В файле нет ранее сохраненных вакансий')
+                            continue
+                    except (FileDataException, GetRemoteDataException) as err:
+                        print(err.message)
+                        continue
                     for vacancy in vacancies:
                         Vacancy(**vacancy)
                 case '3':  # Удалить сохраненные вакансии
-                    json_saver.clear_json_file()
+                    try:
+                        json_saver.clear_json_file()
+                    except FileDataException as err:
+                        print(err.message)
                     vacancies = []
                     continue
                 case '0':  # Выход из программы
@@ -60,7 +72,11 @@ class Menu:
                 continue
 
             # Сохраняем полученные вакансии в файл
-            json_saver.write_to_json_file(vacancies)
+            try:
+                json_saver.write_to_json_file(vacancies)
+            except (FileDataException, GetRemoteDataException) as err:
+                print(err.message)
+
 
             print(f'\nРезультаты сохранены В файл {SEARCH_RESULTS_FILE}\n')  # Вывести на экран?')
             # if self.menu_interaction(self.__menu['Yes_No']) == 'y':
