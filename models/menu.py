@@ -1,7 +1,5 @@
 from api_models.hh_api import HeadHunterAPI
 from api_models.sj_api import SuperJobAPI
-from models import json_saver
-# from models import json_saver
 from models.exceptions import FileDataException, GetRemoteDataException
 from models.vacancy import Vacancy
 from models.json_saver import JSONSaver
@@ -31,6 +29,7 @@ class Menu:
                     except FileDataException as err:
                         print(err.message)
                     vacancies = []
+                    print('\nСохраненные вакансии удалены')
                     continue
                 case '0':  # Выход из программы
                     return
@@ -81,6 +80,7 @@ class Menu:
                 print(err.message)
                 continue
 
+            # Создаем экземпляры класса для работы с вакансиями
             for vacancy in vacancies:
                 Vacancy(**vacancy)
 
@@ -92,16 +92,23 @@ class Menu:
                     for vacancy in Vacancy.get_all_vacancies():
                         print(vacancy)
                 case '2':  # Добавить фильтр
+                    while True:
+                        num = input('\nВведите количество ТОП по оплате вакансий: ')
+                        if num.isdigit():
+                            num_top_vacancies = int(num)
+                            break
+                        else:
+                            print('Некорректный ввод. Введите целое число')
                     filtered_vacancies = Vacancy.filter_processing()
-                    sorted_vacancies = Vacancy.sort_processing(filtered_vacancies)
+                    sorted_vacancies = Vacancy.sort_processing(filtered_vacancies, num_top_vacancies)
+                    print(f'Выводим ТОП-{num_top_vacancies} вакансий:')
+                    for vacancy in sorted_vacancies:
+                        print(vacancy)
                     break
                 case '4':  # Новый запрос
                     break
                 case '0':  # Выход из программы
                     return
-
-        # for vacancy in filtered_vacancies:
-        #     print(vacancy)
 
     @staticmethod
     def menu_interaction(menu: dict) -> str:

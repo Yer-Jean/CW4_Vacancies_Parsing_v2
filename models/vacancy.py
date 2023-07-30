@@ -3,7 +3,7 @@ import re
 
 class Vacancy:
     __all_vacancies: list = []
-    filter_keyword = []
+    filter_keywords = []
 
     def __init__(self, vacancy_id: str, name: str, employer: str, city: str, employment: str, schedule: str,
                  salary_from: int, salary_to: int, currency: str, experience: str, requirement: str, url: str,
@@ -33,11 +33,6 @@ class Vacancy:
     def clear_all_vacancies(cls):
         cls.__all_vacancies.clear()
 
-    # @staticmethod
-    # def calibrate_employment_reference(text: str) -> str:
-    #     """Метод предназначен для унификации значений справочников"""
-    #     pass
-
     @staticmethod
     def clean_and_cut_requirement(text: str) -> str:
         """Метод удаляет из строки text HTML-теги и специальные символы и возвращает
@@ -61,16 +56,16 @@ class Vacancy:
 
     @staticmethod
     def filter_list(vacancies) -> bool:
-        for filter_keyword in Vacancy.filter_keywords:
-            for key in vacancies.__dict__:
-                if type(vacancies.__dict__[key]) == str:
-                    if filter_keyword.lower() in vacancies.__dict__[key].lower():
+        for filter_keyword in Vacancy.filter_keywords:      # Проверяем ключевые слова из запроса фильтра
+            for key in vacancies.__dict__:                  # По всем атрибутам экземпляра класса вакансии
+                if type(vacancies.__dict__[key]) == str:    # Если значение атрибута - строка, то сравниваем ее
+                    if filter_keyword.lower() in vacancies.__dict__[key].lower():  # с ключевым словом и возвращаем True
                         return True
         return False
 
     @classmethod
     def filter_processing(cls) -> list:
-        filter_phrase: str = input("\nВведите строку фильтра: ").strip()
+        filter_phrase: str = input("\nВведите строку фильтра (одно или несколько слов через пробел): ").strip()
         cls.filter_keywords = filter_phrase.split()
         non_filtered_vacancies: list = cls.get_all_vacancies()
         filtered_vacancies = list(filter(cls.filter_list, non_filtered_vacancies))
@@ -84,13 +79,12 @@ class Vacancy:
         return filtered_vacancies
 
     @classmethod
-    def sort_processing(cls, vacancies) -> list:
+    def sort_processing(cls, vacancies, num_top_vacancies: int) -> list:
 
         sorted_vacancies = \
             sorted(vacancies,
             key=lambda vacancy: vacancy.salary_from if vacancy.salary_to == 0 else vacancy.salary_to,
-            reverse=True)[:200]
+            reverse=True)[:num_top_vacancies]
 
-        for vacancy in sorted_vacancies:
-            print(vacancy)
+
         return sorted_vacancies

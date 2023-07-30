@@ -10,10 +10,6 @@ class HeadHunterAPI(SiteAPI, GetRemoteData):
 
     __hh_api_url = HH_API_URL
 
-    # def __init__(self, search_string: str):
-    #     self.search_string = search_string
-        # self.get_vacancies(self.search_string)
-
     def get_vacancies(self, search_string) -> list[dict] | None:
         vacancies = []
         current_page = 0
