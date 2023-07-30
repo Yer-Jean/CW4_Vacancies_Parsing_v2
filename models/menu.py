@@ -1,7 +1,7 @@
-import json
-
 from api_models.hh_api import HeadHunterAPI
 from api_models.sj_api import SuperJobAPI
+from models import json_saver
+# from models import json_saver
 from models.exceptions import FileDataException, GetRemoteDataException
 from models.vacancy import Vacancy
 from models.json_saver import JSONSaver
@@ -11,32 +11,23 @@ from settings import MENU, SEARCH_RESULTS_FILE
 class Menu:
 
     __menu = MENU
+    json_saver = JSONSaver()
 
     def __call__(self, *args, **kwargs):
-        json_saver = JSONSaver()
         # Выводим первое меню
         while True:
             # ----------- Выводим начальное меню -----------
-            choice: str = self.menu_interaction(self.__menu['level_0'])
+            choice: str = self.menu_interaction(self.__menu['main'])
             match choice:
                 case '1':  # Ввести запрос
                     # query: str = 'django'
                     query: str = input("\nВведите поисковый запрос: ").strip()
                 case '2':  # Обработать сохраненные вакансии
-                    # Считываем из файла все вакансии
-                    try:
-                        vacancies = json_saver.read_json_file()
-                        if len(vacancies) == 0:
-                            print('В файле нет ранее сохраненных вакансий')
-                            continue
-                    except (FileDataException, GetRemoteDataException) as err:
-                        print(err.message)
-                        continue
-                    for vacancy in vacancies:
-                        Vacancy(**vacancy)
+                    self.menu_sort_filter()
+                    continue
                 case '3':  # Удалить сохраненные вакансии
                     try:
-                        json_saver.clear_json_file()
+                        self.json_saver.clear_json_file()
                     except FileDataException as err:
                         print(err.message)
                     vacancies = []
@@ -46,7 +37,7 @@ class Menu:
 
             # ----------- Выводим меню 1 уровня -----------
             print('\nВыберите источник')
-            choice: str = self.menu_interaction(self.__menu['level_1'])
+            choice: str = self.menu_interaction(self.__menu['get_API_data'])
             match choice:
                 case '1':  # Поиск по запросу на HeadHunter
                     hh_api = HeadHunterAPI()
@@ -73,15 +64,44 @@ class Menu:
 
             # Сохраняем полученные вакансии в файл
             try:
-                json_saver.write_to_json_file(vacancies)
+                self.json_saver.write_to_json_file(vacancies)
             except (FileDataException, GetRemoteDataException) as err:
                 print(err.message)
 
-
             print(f'\nРезультаты сохранены В файл {SEARCH_RESULTS_FILE}\n')  # Вывести на экран?')
-            # if self.menu_interaction(self.__menu['Yes_No']) == 'y':
-            #     for vacancy in vacancies:  #Vacancy.get_all_vacancies():
-            #         print(vacancy)
+
+    def menu_sort_filter(self):
+        while True:
+            try:  # Считываем из файла все вакансии
+                vacancies = self.json_saver.read_json_file()
+                if len(vacancies) == 0:
+                    print('В файле нет ранее сохраненных вакансий')
+                    continue
+            except (FileDataException, GetRemoteDataException) as err:
+                print(err.message)
+                continue
+
+            for vacancy in vacancies:
+                Vacancy(**vacancy)
+
+            print(f'\nРанее сохранены в файл {len(vacancies)} вакансий')
+
+            choice: str = self.menu_interaction(self.__menu['sort_filter'])
+            match choice:
+                case '1':  # Вывести на экран
+                    for vacancy in Vacancy.get_all_vacancies():
+                        print(vacancy)
+                case '2':  # Добавить фильтр
+                    filtered_vacancies = Vacancy.filter_processing()
+                    sorted_vacancies = Vacancy.sort_processing(filtered_vacancies)
+                    break
+                case '4':  # Новый запрос
+                    break
+                case '0':  # Выход из программы
+                    return
+
+        # for vacancy in filtered_vacancies:
+        #     print(vacancy)
 
     @staticmethod
     def menu_interaction(menu: dict) -> str:

@@ -11,10 +11,11 @@ class JSONSaver:
 
     def read_json_file(self) -> list:
         try:
-            with open(self.__search_result_file) as json_file:  # Иначе считываем из файла данные
+            with open(self.__search_result_file) as json_file:
+                # Проверяем файл на содержимое. Размер = 0 значит пустой
                 if os.stat(self.__search_result_file).st_size == 0:
-                    data_list = []
-                else:
+                    data_list = []  # Возвращаем пустой список
+                else:  # Иначе считываем из файла данные и возвращаем их
                     data_list: list = json.load(json_file)
         except json.decoder.JSONDecodeError:
             raise GetRemoteDataException('\nОшибка в формате данных')

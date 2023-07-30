@@ -3,21 +3,7 @@ import re
 
 class Vacancy:
     __all_vacancies: list = []
-
-    __slots__ = ('vacancy_id',
-                 'name',
-                 'employer',
-                 'city',
-                 'employment',
-                 'schedule',
-                 'salary_from',
-                 'salary_to',
-                 'currency',
-                 'experience',
-                 'requirement',
-                 'url',
-                 'source',
-                 '__dict__')
+    filter_keyword = []
 
     def __init__(self, vacancy_id: str, name: str, employer: str, city: str, employment: str, schedule: str,
                  salary_from: int, salary_to: int, currency: str, experience: str, requirement: str, url: str,
@@ -37,6 +23,7 @@ class Vacancy:
         self.source: str = source
 
         self.__all_vacancies.append(self)
+        # self.filter_keyword = ''
 
     @classmethod
     def get_all_vacancies(cls):
@@ -71,3 +58,39 @@ class Vacancy:
                f'\nЗанятость и график: {self.employment} {self.schedule}' \
                f'\nОтрывок из требований по вакансии: {self.requirement}' \
                f'\nПолный текст вакансии по ссылке {self.url}\nИсточник - {self.source}'
+
+    @staticmethod
+    def filter_list(vacancies) -> bool:
+        for filter_keyword in Vacancy.filter_keywords:
+            for key in vacancies.__dict__:
+                if type(vacancies.__dict__[key]) == str:
+                    if filter_keyword.lower() in vacancies.__dict__[key].lower():
+                        return True
+        return False
+
+    @classmethod
+    def filter_processing(cls) -> list:
+        filter_phrase: str = input("\nВведите строку фильтра: ").strip()
+        cls.filter_keywords = filter_phrase.split()
+        non_filtered_vacancies: list = cls.get_all_vacancies()
+        filtered_vacancies = list(filter(cls.filter_list, non_filtered_vacancies))
+
+        print(f'\nПо фильтру "{filter_phrase}"')
+        if filtered_vacancies:
+            num_of_vacancies = len(filtered_vacancies)
+            print(f'найдено вакансий: {num_of_vacancies}')
+        else:
+            print(f'ничего не найдено.\nИзмените параметры фильтра')
+        return filtered_vacancies
+
+    @classmethod
+    def sort_processing(cls, vacancies) -> list:
+
+        sorted_vacancies = \
+            sorted(vacancies,
+            key=lambda vacancy: vacancy.salary_from if vacancy.salary_to == 0 else vacancy.salary_to,
+            reverse=True)[:200]
+
+        for vacancy in sorted_vacancies:
+            print(vacancy)
+        return sorted_vacancies
