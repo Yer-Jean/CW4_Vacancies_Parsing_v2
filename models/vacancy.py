@@ -23,6 +23,51 @@ class Vacancy:
         self.source: str = source
 
         self.__all_vacancies.append(self)
+        # Атрибут, которому присваивается значение нижней границы оплаты, если она указана, иначе - верхней границы
+        self.salary = self.salary_from if self.salary_to == 0 else self.salary_to
+
+    def __str__(self):
+        salary: str = {
+            self.salary_from == 0 and self.salary_to == 0: 'по договоренности',
+            self.salary_from > 0 and self.salary_to == 0: f'от {self.salary_from:,} {self.currency}',
+            self.salary_from == 0 and self.salary_to > 0: f'до {self.salary_to:,} {self.currency}',
+            self.salary_from > 0 and self.salary_to > 0: f'{self.salary_from:,} - {self.salary_to:,} {self.currency}'
+        }[True]
+        return f'\nВакансия: {self.name}\nРаботодатель: {self.employer}\nГород {self.city}' \
+               f'\nОплата {salary}\nНеобходимый опыт: {self.experience}' \
+               f'\nЗанятость и график: {self.employment} {self.schedule}' \
+               f'\nОтрывок из требований по вакансии: {self.requirement}' \
+               f'\nПолный текст вакансии по ссылке {self.url}\nИсточник - {self.source}'
+
+    def __eq__(self, other):
+        s = self.verify_data(other)
+        return self.salary == s
+
+    def __ne__(self, other):
+        s = self.verify_data(other)
+        return self.salary != s
+
+    def __lt__(self, other):
+        s = self.verify_data(other)
+        return self.salary < s
+
+    def __le__(self, other):
+        s = self.verify_data(other)
+        return self.salary <= s
+
+    def __gt__(self, other):
+        s = self.verify_data(other)
+        return self.salary > s
+
+    def __ge__(self, other):
+        s = self.verify_data(other)
+        return self.salary >= s
+
+    @classmethod
+    def verify_data(cls, other):
+        if not isinstance(other, int | Vacancy):
+            raise TypeError('Ошибка в сравнении данных.')
+        return other if isinstance(other, int) else other.salary
 
     @classmethod
     def get_all_vacancies(cls):
@@ -41,19 +86,6 @@ class Vacancy:
         # result_string: str = re.sub(r'\s', ' ', re.sub(r'<.*?>', '', text))
         result_string: str = re.sub(r'<.*?>', '', text)  # Удаляем из строки HTML-теги
         return f'{result_string[:115]}...' if len(result_string) > 115 else result_string
-
-    def __str__(self):
-        salary: str = {
-            self.salary_from == 0 and self.salary_to == 0: 'по договоренности',
-            self.salary_from > 0 and self.salary_to == 0: f'от {self.salary_from:,} {self.currency}',
-            self.salary_from == 0 and self.salary_to > 0: f'до {self.salary_to:,} {self.currency}',
-            self.salary_from > 0 and self.salary_to > 0: f'{self.salary_from:,} - {self.salary_to:,} {self.currency}'
-        }[True]
-        return f'\nВакансия: {self.name}\nРаботодатель: {self.employer}\nГород {self.city}' \
-               f'\nОплата {salary}\nНеобходимый опыт: {self.experience}' \
-               f'\nЗанятость и график: {self.employment} {self.schedule}' \
-               f'\nОтрывок из требований по вакансии: {self.requirement}' \
-               f'\nПолный текст вакансии по ссылке {self.url}\nИсточник - {self.source}'
 
     @staticmethod
     def filter_list(vacancies) -> bool:
@@ -91,8 +123,5 @@ class Vacancy:
         Вакансии, сортируются по полю salary_from (от ХХХ RUB).
         Если это поле в данной вакансии пустое, до берется поле salary_to (до ХХХ RUB)
         Если оба поля пустые, то данная вакансия опускается ниже в сортировке."""
-        sorted_vacancies = \
-            sorted(vacancies,
-                   key=lambda vacancy: vacancy.salary_from if vacancy.salary_to == 0 else vacancy.salary_to,
-                   reverse=True)[:num_top_vacancies]
+        sorted_vacancies = sorted(vacancies, reverse=True)[:num_top_vacancies]
         return sorted_vacancies
