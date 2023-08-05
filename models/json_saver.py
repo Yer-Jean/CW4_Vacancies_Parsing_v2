@@ -32,7 +32,7 @@ class JSONSaver:
             with open(self.__search_result_file, "a") as json_file:
                 # Проверяем файл на содержимое. Размер = 0 значит пустой
                 if os.stat(self.__search_result_file).st_size == 0:
-                    json.dump(data, json_file)
+                    json.dump(data, json_file, indent=4, ensure_ascii=False)
                 else:  # Иначе считываем из файла данные
                     with open(self.__search_result_file) as json_file:
                         data_list = json.load(json_file)
@@ -43,7 +43,7 @@ class JSONSaver:
                     data_list = self.remove_duplicates(data_list, 'url')
                     # И записываем всё вместе в файл
                     with open(self.__search_result_file, "w") as json_file:
-                        json.dump(data_list, json_file)
+                        json.dump(data_list, json_file, indent=4, ensure_ascii=False)
         except json.decoder.JSONDecodeError:
             raise GetRemoteDataException('\nОшибка в данных, данные не сохранены')
         except FileNotFoundError:
