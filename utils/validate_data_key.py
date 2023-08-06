@@ -1,4 +1,14 @@
+import re
+
 from typing import Any
+
+
+def clean_and_cut_requirement(text: str) -> str:
+    """Метод удаляет из строки text HTML-теги и специальные символы и возвращает
+    результат в виде очищенной строки максимальной длиной 115 символов."""
+    # result_string: str = re.sub(r'\s', ' ', re.sub(r'<.*?>', '', text))
+    result_string: str = re.sub(r'<.*?>', '', text)  # Удаляем из строки HTML-теги
+    return f'{result_string[:115]}...' if len(result_string) > 115 else result_string
 
 
 def validate_key(data: list, value_type: str, key: str, sub_key: str) -> Any:

@@ -2,6 +2,7 @@ from api_models.hh_api import HeadHunterAPI
 from api_models.sj_api import SuperJobAPI
 from models.exceptions import FileDataException, GetRemoteDataException
 from models.vacancy import Vacancy
+from utils.sort_and_filter import sort_processing, filter_processing
 from models.json_saver import JSONSaver
 from settings import MENU, SEARCH_RESULTS_FILE
 
@@ -99,11 +100,12 @@ class Menu:
                         else:
                             print('Некорректный ввод. Введите целое число')
                     # Фильтруем список вакансий
-                    filtered_vacancies = Vacancy.filter_processing()
+                    filtered_vacancies = filter_processing()
                     # Сортируем список вакансий по оплате
-                    sorted_vacancies = Vacancy.sort_processing(filtered_vacancies, num_top_vacancies)
+                    sorted_vacancies = sort_processing(filtered_vacancies, num_top_vacancies)
+                    # sorted_vacancies = Vacancy.sort_processing(filtered_vacancies, num_top_vacancies)
                     # Выводим ТОП вакансии по оплате
-                    print(f'Выводим ТОП-{num_top_vacancies} вакансий:')
+                    print(f'\nВыводим ТОП-{num_top_vacancies} вакансий:')
                     for vacancy in sorted_vacancies:
                         print(vacancy)
                     break
