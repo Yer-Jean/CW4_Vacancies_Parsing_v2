@@ -2,6 +2,22 @@ import re
 
 
 class Vacancy:
+
+    __slots__ = ('vacancy_id',
+                 'name',
+                 'employer',
+                 'city',
+                 'employment',
+                 'schedule',
+                 'salary_from',
+                 'salary_to',
+                 'salary',
+                 'currency',
+                 'experience',
+                 'requirement',
+                 'url',
+                 'source')
+
     __all_vacancies: list = []
     filter_keywords = []  # Список слов необходимых для фильтрации вакансий
 
@@ -24,7 +40,7 @@ class Vacancy:
 
         self.__all_vacancies.append(self)
         # Атрибут, которому присваивается значение нижней границы оплаты, если она указана, иначе - верхней границы
-        self.salary = self.salary_from if self.salary_to == 0 else self.salary_to
+        self.salary: int = self.salary_from if self.salary_to == 0 else self.salary_to
 
     def __str__(self):
         salary: str = {
@@ -92,10 +108,11 @@ class Vacancy:
         """Метод ищет совпадение ключевых слов в списке filter_keywords со значениями всех
         строковых атрибутов экземпляров класса вакансий и возвращает True, если совпадение
         найдено, иначе False."""
-        for filter_keyword in Vacancy.filter_keywords:      # Проверяем ключевые слова из запроса фильтра
-            for key in vacancies.__dict__:                  # По всем атрибутам экземпляра класса вакансии
-                if type(vacancies.__dict__[key]) == str:    # Если значение атрибута - строка, то сравниваем ее
-                    if filter_keyword.lower() in vacancies.__dict__[key].lower():  # с ключевым словом и возвращаем True
+        for filter_keyword in Vacancy.filter_keywords:           # Проверяем ключевые слова из запроса фильтра
+            for key in vacancies.__slots__:                      # По всем атрибутам экземпляра класса вакансии
+                value = getattr(vacancies, key)                  # Получаем значение атрибута
+                if type(value) == str:                           # Если значение атрибута - строка, то сравниваем ее
+                    if filter_keyword.lower() in value.lower():  # с ключевым словом и возвращаем True
                         return True
         return False
 
